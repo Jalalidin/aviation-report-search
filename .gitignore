@@ -1,0 +1,21 @@
+# downloaded and derived data, model caches, indexes (top-level only: docs/data is the site)
+/data/
+*.mdb
+*.zip
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# web
+node_modules/
+web/dist/
+
+# secrets and OS
+.env
+.DS_Store
+
+# local tool settings
+.claude/

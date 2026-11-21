@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aviation report search</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #ffffff; --ink: #16202b; --muted: #5b6876; --line: #dfe4ea;
+    --accent: #0b5cad; --accent-soft: #e6f0fa; --mark: #ffe58a;
+    --fatal: #b3261e; --serious: #b25e09; --minor: #6b6f00; --none: #2e7d4f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --panel: #18202a; --ink: #e7ecf2; --muted: #9aa7b5; --line: #2a3542;
+      --accent: #6db3f2; --accent-soft: #1d2f43; --mark: #6b5a00;
+      --fatal: #ff8a80; --serious: #ffb866; --minor: #d6d86a; --none: #7fd3a2;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 22px 28px 0; }
+  h1 { font-size: 20px; margin: 0; letter-spacing: -0.01em; }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 13px; }
+  .controls { position: sticky; top: 0; z-index: 5; background: var(--bg);
+              padding: 16px 28px 12px; border-bottom: 1px solid var(--line); }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .row + .row { margin-top: 10px; }
+  input[type=search] { flex: 1 1 380px; padding: 11px 14px; font-size: 16px; color: var(--ink);
+                       background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+  input[type=search]:focus, select:focus, input[type=number]:focus, button:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 1px; }
+  button.go { padding: 11px 20px; font-size: 15px; font-weight: 600; color: #fff;
+              background: #0b5cad; border: 0; border-radius: 8px; cursor: pointer; }
+  label { font-size: 12px; color: var(--muted); display: flex; flex-direction: column; gap: 3px; }
+  select, input[type=number] { padding: 7px 9px; font-size: 14px; color: var(--ink);
+                               background: var(--panel); border: 1px solid var(--line); border-radius: 6px; }
+  input[type=number] { width: 84px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; padding: 12px 28px 0; }
+  .chip { font-size: 13px; padding: 5px 11px; border-radius: 999px; cursor: pointer; color: var(--accent);
+          background: var(--accent-soft); border: 0; }
+  main { padding: 16px 28px 60px; display: grid; gap: 22px; grid-template-columns: 1fr; }
+  main.two { grid-template-columns: 1fr 1fr; }
+  @media (max-width: 900px) { main.two { grid-template-columns: 1fr; } }
+  .col h2 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 0 0 10px;
+            text-transform: uppercase; letter-spacing: 0.04em; }
+  .card { display: block; width: 100%; text-align: left; font: inherit; color: inherit; cursor: pointer;
+          background: var(--panel); border: 1px solid var(--line); border-radius: 10px;
+          padding: 13px 15px; margin-bottom: 10px; }
+  .card:hover { border-color: var(--accent); }
+  .card.shared { box-shadow: inset 3px 0 0 var(--accent); }
+  .meta { font-size: 12px; color: var(--muted); display: flex; gap: 8px; flex-wrap: wrap; }
+  .title { font-weight: 600; margin: 3px 0 5px; }
+  .badges { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+  .badge { font-size: 12px; padding: 1px 8px; border-radius: 5px; border: 1px solid var(--line); color: var(--muted); }
+  .badge.Fatal { color: var(--fatal); border-color: var(--fatal); }
+  .badge.Serious { color: var(--serious); border-color: var(--serious); }
+  .badge.Minor { color: var(--minor); border-color: var(--minor); }
+  .badge.None { color: var(--none); border-color: var(--none); }
+  .snippet { font-size: 14px; }
+  mark { background: var(--mark); color: inherit; padding: 0 1px; border-radius: 2px; }
+  .cause { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .empty { color: var(--muted); padding: 30px 0; }
+  .rank { font-variant-numeric: tabular-nums; }
+  dialog { width: min(880px, 94vw); max-height: 90vh; padding: 0; border: 1px solid var(--line);
+           border-radius: 12px; background: var(--panel); color: var(--ink); }
+  dialog::backdrop { background: rgba(0, 0, 0, 0.45); }
+  .detail { padding: 22px 26px 26px; overflow-y: auto; max-height: 90vh; }
+  .detail h2 { margin: 0 34px 2px 0; font-size: 19px; }
+  .detail h3 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted);
+               margin: 20px 0 6px; }
+  .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 18px; margin-top: 12px; }
+  .facts div span { display: block; font-size: 12px; color: var(--muted); }
+  .detail p { margin: 0 0 10px; white-space: pre-wrap; }
+  .detail ul { margin: 0; padding-left: 20px; }
+  .close { position: absolute; top: 12px; right: 14px; font-size: 22px; line-height: 1; background: none;
+           border: 0; color: var(--muted); cursor: pointer; padding: 6px 10px; }
+  .source { font-size: 12px; color: var(--muted); margin-left: 6px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+  details summary { cursor: pointer; color: var(--accent); margin-bottom: 8px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Aviation report search</h1>
+  <p id="sub">Loading…</p>
+</header>
+
+<form class="controls" id="form">
+  <div class="row">
+    <input type="search" id="q" placeholder="Describe what happened, in your own words…" autocomplete="off" autofocus>
+    <button class="go" type="submit">Search</button>
+  </div>
+  <div class="row">
+    <label>Method <select id="method"></select></label>
+    <label>Compare with <select id="method2"><option value="">— none —</option></select></label>
+    <label>Year from <input type="number" id="yf"></label>
+    <label>Year to <input type="number" id="yt"></label>
+    <label>Aircraft type <select id="cat"><option value="">Any</option></select></label>
+    <label>Highest injury <select id="inj"><option value="">Any</option></select></label>
+  </div>
+</form>
+
+<div class="chips" id="chips"></div>
+<main id="main"></main>
+
+<dialog id="dlg"><button class="close" id="close" aria-label="Close">×</button><div class="detail" id="detail"></div></dialog>
+
+<script>
+const $ = id => document.getElementById(id);
+const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+const EXAMPLES = [
+  "engine seized on the way to an oil change",
+  "tail rotor blade separated in flight",
+  "nose gear would not lock down after repaint",
+  "water in the fuel, power loss on takeoff",
+  "pilot forgot to lower the landing gear",
+];
+let META = { methods: {} };
+
+async function getJSON(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error((await r.json().catch(() => ({}))).detail || r.statusText);
+  return r.json();
+}
+
+function option(select, value, label) { const o = el("option", "", label); o.value = value; select.append(o); }
+
+function card(r, rank, shared, withSnippet) {
+  const c = el("button", "card" + (shared ? " shared" : ""));
+  c.type = "button";
+  const meta = el("div", "meta");
+  if (rank) meta.append(el("span", "rank", "#" + rank));
+  meta.append(el("span", "", r.date), el("span", "", r.ntsb_no), el("span", "", r.place));
+  c.append(meta, el("div", "title", r.aircraft || "Unknown aircraft"));
+  const b = el("div", "badges");
+  if (r.event) b.append(el("span", "badge", (r.phase ? r.phase + " · " : "") + r.event));
+  if (r.injury) b.append(el("span", "badge " + r.injury, "Injury: " + r.injury));
+  c.append(b);
+  if (withSnippet && r.snippet) { const s = el("div", "snippet"); s.innerHTML = r.snippet; c.append(s); }  // escaped server-side
+  if (r.cause) c.append(el("div", "cause", "Probable cause: " + r.cause));
+  c.onclick = () => openEvent(r.ev_id);
+  return c;
+}
+
+function column(title, results, sharedIds) {
+  const col = el("section", "col");
+  col.append(el("h2", "", title));
+  if (!results.length) col.append(el("div", "empty", "No reports match. Try other words or loosen the filters."));
+  results.forEach((r, i) => col.append(card(r, i + 1, sharedIds && sharedIds.has(r.ev_id), true)));
+  return col;
+}
+
+async function run() {
+  const q = $("q").value.trim();
+  if (q.length < 2) return;
+  const base = new URLSearchParams({ q, k: 20 });
+  for (const [k, id] of [["year_from", "yf"], ["year_to", "yt"], ["category", "cat"], ["injury", "inj"]])
+    if ($(id).value) base.set(k, $(id).value);
+  const picked = [$("method").value, $("method2").value].filter((m, i, a) => m && a.indexOf(m) === i);
+  const main = $("main");
+  main.className = picked.length > 1 ? "two" : "";
+  main.replaceChildren(el("div", "empty", "Searching…"));
+  try {
+    const out = await Promise.all(picked.map(m => getJSON("/api/search?" + base + "&method=" + encodeURIComponent(m))));
+    let shared = null;
+    if (out.length > 1) {
+      const a = new Set(out[0].results.map(r => r.ev_id));
+      shared = new Set(out[1].results.map(r => r.ev_id).filter(id => a.has(id)));
+    }
+    main.replaceChildren(...out.map(o => column(
+      META.methods[o.method] + (shared ? ` · ${shared.size} of ${o.results.length} also found by the other method` : ""),
+      o.results, shared)));
+  } catch (e) {
+    main.replaceChildren(el("div", "empty", "Search failed: " + e.message));
+  }
+}
+
+async function openEvent(id) {
+  const d = $("detail");
+  d.replaceChildren(el("p", "", "Loading…"));
+  if (!$("dlg").open) $("dlg").showModal();
+  let e;
+  try { e = await getJSON("/api/event/" + encodeURIComponent(id)); }
+  catch (err) { d.replaceChildren(el("p", "", "Could not load this report: " + err.message)); return; }
+  d.replaceChildren();
+  d.scrollTop = 0;
+  d.append(el("h2", "", e.aircraft || "Unknown aircraft"));
+  d.append(el("div", "meta", [e.date, e.ntsb_no, e.place].filter(Boolean).join("  ·  ")));
+  const facts = el("div", "facts");
+  for (const [k, v] of [["Defining event", e.event], ["Phase of flight", e.phase], ["Highest injury", e.injury],
+       ["Fatalities", String(e.fatalities)], ["Aircraft damage", e.damage], ["Aircraft type", e.category],
+       ["Registration", e.registration], ["Operation", e.operation], ["Conditions", e.conditions]]) {
+    if (!v) continue;
+    const f = el("div"); f.append(el("span", "", k), document.createTextNode(v)); facts.append(f);
+  }
+  d.append(facts);
+  const section = (title, source) => { const h = el("h3", "", title); if (source) h.append(el("span", "source", source)); d.append(h); };
+  if (e.cause) { section("Probable cause", "from the table"); d.append(el("p", "", e.cause)); }
+  if (e.occurrences.length) { section("Sequence of events", "coded"); const u = el("ul"); e.occurrences.forEach(x => u.append(el("li", "", x))); d.append(u); }
+  if (e.findings.length) { section("Findings", "coded"); const u = el("ul"); e.findings.forEach(x => u.append(el("li", "", x))); d.append(u); }
+  if (e.analysis) { section("Analysis", "narrative"); d.append(el("p", "", e.analysis)); }
+  if (e.factual) {
+    section("Factual narrative", "narrative");
+    const det = el("details"); det.append(el("summary", "", "Show full narrative"), el("p", "", e.factual)); d.append(det);
+  }
+  section("Similar incidents", "by " + e.similar_basis);
+  e.similar.forEach(s => d.append(card(s, 0, false, false)));
+}
+
+$("form").addEventListener("submit", ev => { ev.preventDefault(); run(); });
+for (const id of ["method", "method2", "cat", "inj", "yf", "yt"]) $(id).addEventListener("change", run);
+$("close").onclick = () => $("dlg").close();
+$("dlg").addEventListener("click", ev => { if (ev.target === $("dlg")) $("dlg").close(); });
+
+(async () => {
+  try { META = await getJSON("/api/meta"); }
+  catch (e) { $("sub").textContent = "Could not reach the search service: " + e.message; return; }
+  $("sub").textContent = `${META.documents.toLocaleString()} NTSB accident and incident reports, ${META.years[0]}–${META.years[1]}`;
+  for (const [id, label] of Object.entries(META.methods)) { option($("method"), id, label); option($("method2"), id, label); }
+  const hybrid = Object.keys(META.methods).find(m => m.startsWith("hybrid:qwen3")) || Object.keys(META.methods).find(m => m.startsWith("hybrid:"));
+  if (hybrid) $("method").value = hybrid;
+  META.categories.forEach(c => option($("cat"), c, c));
+  META.injuries.forEach(c => option($("inj"), c, c));
+  $("yf").placeholder = META.years[0]; $("yt").placeholder = META.years[1];
+  EXAMPLES.forEach(t => { const b = el("button", "chip", t); b.type = "button"; b.onclick = () => { $("q").value = t; run(); }; $("chips").append(b); });
+})();
+</script>
+</body>
+</html>

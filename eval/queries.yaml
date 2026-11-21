@@ -1,0 +1,174 @@
+# Task A - ad-hoc search, known-item version.
+#
+# Each entry is one target report (NTSB event id) and three queries an engineer might type
+# to find it:
+#   kw  terse technical keywords
+#   nl  a natural-language question
+#   mm  vocabulary mismatch: lay or alternative wording that avoids the report's own terms
+#
+# Targets were sampled with a fixed seed (40 from reports with an aircraft system/component
+# finding, 20 operational), then reports too generic to be found by description were dropped.
+# The queries were written by an AI model (Claude) from the report's analysis text - not by a
+# domain expert. Only the target is counted as relevant, so absolute scores are pessimistic:
+# other reports can be just as good an answer. Use this to compare arms, not as final truth.
+
+- {target: 20100624X71830,
+   kw: "elevator vibration overstress failure amateur-built amphibian builder modification",
+   nl: "Have there been cases where an owner's modification to a kit amphibian led to the elevator failing in flight?",
+   mm: "homebuilt seaplane tail surface started shaking in descent and broke after the owner changed the design"}
+- {target: 20090422X00452,
+   kw: "gear-up landing pilot distracted passengers sightseeing final approach",
+   nl: "Which accidents involved a pilot forgetting to lower the landing gear because he was showing passengers something on final?",
+   mm: "wheels left retracted at touchdown after a scenic tour, pilot banked to show a landmark"}
+- {target: 20110401X24330,
+   kw: "fuselage crown skin lap joint fatigue cracking rapid decompression",
+   nl: "Is there a report of an airliner losing cabin pressure because a fuselage skin panel installed wrong at the factory cracked open?",
+   mm: "hole opened in the roof of a passenger jet in climb, manufacturing defect in riveted skin overlap"}
+- {target: 20180323X75727,
+   kw: "fuel selector inadvertently off position switching tanks fuel starvation cruise",
+   nl: "Are there accidents where the pilot turned the fuel selector to off by mistake while balancing tanks in cruise?",
+   mm: "engine stopped right after the pilot changed from left to right tank, valve handle ended up in shutoff"}
+- {target: 20220914105934,
+   kw: "landing gear warning horn inoperative gear-up landing headset jack communication distraction",
+   nl: "Did any gear-up landing involve a gear warning horn that failed to sound?",
+   mm: "belly landing after radio audio problems distracted the pilot on an instrument approach; alert for retracted wheels never went off"}
+- {target: 20240924195170,
+   kw: "stuck exhaust valve valve guide manufacturing defect partial power loss initial climb",
+   nl: "Which reports blame a manufacturing fault in an exhaust valve guide for an engine running rough after takeoff?",
+   mm: "engine roughness after a touch-and-go traced to a valve that seized because the factory made its guide wrong"}
+- {target: 20250108199523,
+   kw: "landing gear failed to extend manual extension emergency procedure not followed gear-up",
+   nl: "Are there cases where the gear would not come down normally and the pilot landed gear-up without trying the manual extension?",
+   mm: "twin landed on its belly after a second instrument approach; pilot skipped the hand-crank backup when the wheels stayed up"}
+- {target: 20130315X34542,
+   kw: "tail rotor blade spar fracture blade separation tail gearbox post-maintenance check flight",
+   nl: "Has a helicopter lost a tail rotor blade in flight because the blade spar fractured?",
+   mm: "one of the antitorque blades flew off a helicopter during a test flight after avionics work"}
+- {target: 20130523X25530,
+   kw: "throttle cable disconnected throttle lever self-locking nut insufficient torque",
+   nl: "Which accidents were caused by the throttle linkage coming apart because a self-locking nut was reused or under-torqued?",
+   mm: "engine stopped responding to the power lever on final; a fastener on the control cable had worked loose after maintenance"}
+- {target: 20200918X02045,
+   kw: "connecting rod bearing failure lack of lubrication increased oil consumption",
+   nl: "Are there engine failures where the pilot had noticed rising oil consumption before the connecting rod bearings failed?",
+   mm: "engine seized on the way to an oil change after it had been burning more oil than usual"}
+- {target: 20170719X90401,
+   kw: "tailwheel unlocked castering takeoff roll veer runway excursion",
+   nl: "Which takeoff accidents happened because the pilot did not lock the tailwheel?",
+   mm: "taildragger swerved off the runway on departure because the rear wheel was left free to swivel"}
+- {target: 20120628X11342,
+   kw: "carburetor inlet screen particulate contamination both engines lost power twin",
+   nl: "Has a twin lost power on both engines because debris blocked the carburetor fuel screens?",
+   mm: "dirt clogging the fuel strainers at the carbs made first the left then the right motor quit"}
+- {target: 20241206199390,
+   kw: "main landing gear failed to extend tire wheel well clearance after tire change",
+   nl: "Are there cases where a main gear jammed in the wheel well after a tire replacement?",
+   mm: "new tyre fitted by a mechanic was too tight in the bay so one leg would not come down"}
+- {target: 20100801X85218,
+   kw: "jump door opened during takeoff skydiving flight parachutist distraction trees",
+   nl: "Did any skydiving flight crash after the jump door came open on takeoff?",
+   mm: "pilot's attention pulled away when a skydiver leaned out to close the open side door right after liftoff"}
+- {target: 20220604105184,
+   kw: "tail rotor crosshead drive plate not secured maintenance loss of antitorque control",
+   nl: "Which helicopter accidents followed maintenance where tail rotor pitch-change hardware was left unsecured?",
+   mm: "helicopter lost yaw control minutes after leaving the shop because mechanics did not fasten a part in the tail rotor hub"}
+- {target: 20200115X85405,
+   kw: "fuel exhaustion left engine tip tank leak check maintenance one engine inoperative checklist",
+   nl: "Is there a twin accident where an engine ran dry on the flight home from maintenance because the pilot did not refuel?",
+   mm: "tank was nearly empty after the shop tested it for leaks; pilot took off without adding gas and one side quit on approach"}
+- {target: 20151001X85024,
+   kw: "landing light failure night unlighted grass airstrip bounced landing",
+   nl: "Have pilots lost depth perception and crashed when the landing light went out on short final at night?",
+   mm: "lamp burned out just before touchdown on a dark turf runway, plane bounced and flipped in a cornfield"}
+- {target: 20120912X92452,
+   kw: "piston ring failure clogged fuel injector nozzle lean mixture loss of compression",
+   nl: "Which power losses were traced to a partially blocked fuel nozzle that leaned one cylinder until the piston rings failed?",
+   mm: "student ditched in a lake after a backfire; one cylinder overheated from a restricted injector"}
+- {target: 20170308X94158,
+   kw: "turboprop flameout fuel control unit mis-set simulated engine failure training crew alerting disabled",
+   nl: "Has a turboprop trainer flamed out during a simulated engine failure because the fuel control unit was set wrong at the factory?",
+   mm: "turbine actually quit during a practice power-off glide and the crew did not notice because warnings were switched off"}
+- {target: 20210915103863,
+   kw: "loss of tail rotor effectiveness out-of-ground-effect hover gusty wind low rotor rpm",
+   nl: "Which helicopter accidents involved loss of tail rotor effectiveness while hover taxiing to the fuel pumps?",
+   mm: "helicopter started spinning to the right in a high hover on a windy day and came down beside the taxiway"}
+- {target: 20130111X25405,
+   kw: "severe icing structural ice loss of control climb AIRMET freezing fog",
+   nl: "Are there accidents where a piston twin picked up heavy airframe ice shortly after departing in freezing fog and snow?",
+   mm: "ice built up on the wings after takeoff into winter weather and the pilot could not keep the plane flying"}
+- {target: 20231211193502,
+   kw: "connecting rod failure oil starvation in-flight fire loss of oil pressure return to airport",
+   nl: "Which engine failures with dropping oil pressure ended in an in-flight fire and a desert forced landing?",
+   mm: "rod let go after oil pressure fell in climb, flames from the cowling, landed in rough scrub"}
+- {target: 20250829200900,
+   kw: "wet grass runway overrun quartering tailwind landed long",
+   nl: "Which landing overruns happened on wet grass runways with a tailwind?",
+   mm: "could not stop on a soggy turf strip after touching down late and slid into crops"}
+- {target: 20161014X31149,
+   kw: "nose landing gear down-lock piston paint accumulation collapse after repaint",
+   nl: "Has paint buildup from a repaint ever prevented a nose gear from locking down?",
+   mm: "front wheel leg folded on landing during delivery from the paint shop; overspray gummed up the locking actuator"}
+- {target: 20200608X14903,
+   kw: "brake assembly O-ring failure loss of brake pressure landing roll veer",
+   nl: "Which loss-of-control landings were caused by a failed O-ring in a wheel brake?",
+   mm: "seal in the right brake blew so the pedal did nothing and the ag plane swung off the left side"}
+- {target: 20120922X92533,
+   kw: "water contamination fuel takeoff power loss maintenance failed to correct recently purchased airplane",
+   nl: "Are there accidents where maintenance did not fully fix water in the fuel system and the engine lost power on takeoff?",
+   mm: "engine sounded wrong on the takeoff run of a newly bought plane; leftover moisture in the tanks after shop work"}
+- {target: 20140705X44414,
+   kw: "safety belt bracket failure aluminum nose over injury severity",
+   nl: "Which reports cite a failed seat belt attachment bracket as making the pilot's injuries worse?",
+   mm: "restraint anchor snapped when the taildragger flipped in a wheat field"}
+- {target: 20241028195380,
+   kw: "elevator control cable separation improper hardware installation loss of pitch control",
+   nl: "Have elevator cables come apart in flight because the attaching hardware was installed incorrectly?",
+   mm: "stick went slack in pitch just after liftoff in a homebuilt; the cable fitting had been assembled wrong"}
+- {target: 20161212X71609,
+   kw: "brake malfunction instructor side inoperative taxi collision parked airplane",
+   nl: "Did any taxi accident happen after the crew knew the right-seat brakes were not working?",
+   mm: "kept taxiing to the ramp with bad brakes on one side of the cockpit and hit a parked aircraft"}
+- {target: 20090319X54357,
+   kw: "spin test ballistic recovery parachute jettison failure twisted straps",
+   nl: "Is there a flight test accident where the recovery parachute could not be released after deployment?",
+   mm: "test pilot could not recover from a spin, popped the airframe chute, then it would not detach"}
+- {target: 20090410X92304,
+   kw: "motor glider oil starvation improper oil servicing previous owner engine rebuilt",
+   nl: "Which power losses were blamed on a previous owner servicing the engine oil incorrectly?",
+   mm: "self-launching sailplane engine quit; the seller had rebuilt it and stored it without the right amount of oil"}
+- {target: 20201013102138,
+   kw: "magneto anomaly partial power loss aborted takeoff runway excursion",
+   nl: "Which takeoff power losses were traced to a faulty magneto?",
+   mm: "ignition unit dropped too many rpm on the test run after the engine lost some power leaving the ground"}
+- {target: 20150819X94949,
+   kw: "agricultural application utility pole collision aileron damage uncontrolled roll",
+   nl: "Are there crop-dusting accidents where the aircraft hit a power pole and then rolled out of control from aileron damage?",
+   mm: "spray plane clipped a pole at the field edge, pilot radioed he messed up, then it rolled over"}
+- {target: 20190813X55350,
+   kw: "wake turbulence encounter climb business jet passenger injuries seat belt sign off",
+   nl: "Which injuries happened when a business jet hit wake turbulence in smooth air with the seat belt sign off?",
+   mm: "corporate jet jolted by another aircraft's vortex near FL340, people thrown around the cabin"}
+- {target: 20180625X24533,
+   kw: "floatplane flat light dusk depth perception misjudged approach tree strike",
+   nl: "Have seaplane pilots struck trees on approach to a lake because of flat light?",
+   mm: "could not judge height under gray overcast near sunset while landing on water"}
+- {target: 20151201X72017,
+   kw: "tail rotor driveshaft intermediate flex plate overstress fracture",
+   nl: "Has an R44 had the tail rotor drive fracture at the flex plate during a ground power check?",
+   mm: "loud pop when raising collective before a tour flight; a coupling in the tail drive had broken"}
+- {target: 20150727X42358,
+   kw: "floatplane takeoff full flaps past decision point insufficient airspeed stall",
+   nl: "Which floatplane takeoffs ended in a stall after the pilot continued past his abort point?",
+   mm: "yanked on full flaps to unstick from the water, got to 40 feet, then mushed in"}
+- {target: 20200301X92531,
+   kw: "glider simulated rope break low altitude turn stall gusting wind",
+   nl: "Are there glider accidents during practice rope-break returns to the runway?",
+   mm: "sailplane released from tow at 300 feet to practise a premature release and dropped a wing turning back"}
+- {target: 20170403X22521,
+   kw: "flight instructor valley rising terrain CFIT instructional flight",
+   nl: "Which training flights crashed after the instructor chose to fly up a river valley for fun?",
+   mm: "boxed in by climbing ground in a canyon during a lesson, could not outclimb or turn around"}
+- {target: 20110622X83304,
+   kw: "balloon landing approach tree line contact gondola wind increase",
+   nl: "Have hot air balloons been damaged when the pilot intentionally brushed treetops on approach?",
+   mm: "basket dragged through the top of the trees to slow down before the landing field"}

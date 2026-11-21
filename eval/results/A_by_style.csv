@@ -1,0 +1,8 @@
+arm,keywords,mismatch,question
+bm25,0.692,0.204,0.404
+bge-small,0.523,0.174,0.34
+bm25[table],0.796,0.066,0.472
+bm25[merged],0.785,0.246,0.49
+bm25+bge-small,0.595,0.251,0.449
+bm25[table⊕narr],0.772,0.229,0.462
+bm25+bge-small+rerank,0.724,0.412,0.429
