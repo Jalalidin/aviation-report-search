@@ -49,6 +49,8 @@ ARM_LABELS = {
     "bm25+bge-m3": "Hybrid: keyword + BGE-M3",
     "bm25+bge-small+rerank": "Hybrid (BGE small) + reranker",
     "bm25+qwen3-0.6b+rerank": "Hybrid (Qwen3) + reranker",
+    "bm25[merged]+qwen3-0.6b": "Hybrid: keyword on table + narrative, + Qwen3",
+    "bm25[merged]+qwen3-0.6b+rerank": "Hybrid on table + narrative, + reranker",
 }
 
 

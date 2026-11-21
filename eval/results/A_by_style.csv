@@ -1,8 +1,16 @@
 arm,keywords,mismatch,question
 bm25,0.692,0.204,0.404
 bge-small,0.523,0.174,0.34
+qwen3-0.6b,0.663,0.243,0.339
 bm25[table],0.796,0.066,0.472
+bge-small[table],0.431,0.048,0.211
+qwen3-0.6b[table],0.536,0.123,0.357
 bm25[merged],0.785,0.246,0.49
+bge-small[merged],0.458,0.093,0.326
 bm25+bge-small,0.595,0.251,0.449
+bm25+qwen3-0.6b,0.719,0.269,0.405
 bm25[table⊕narr],0.772,0.229,0.462
-bm25+bge-small+rerank,0.724,0.412,0.429
+qwen3-0.6b[table⊕narr],0.647,0.202,0.366
+bm25+qwen3-0.6b+rerank,0.699,0.461,0.436
+bm25[merged]+qwen3-0.6b,0.778,0.301,0.448
+bm25[merged]+qwen3-0.6b+rerank,0.73,0.369,0.533

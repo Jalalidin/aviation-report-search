@@ -94,16 +94,23 @@ def _report(task: str, qrels: dict, runs: dict[str, Run], metrics: list[str],
     return table
 
 
+_RERANKER = None
+
+
 def _maybe_rerank(runs: dict[str, Run], base: str, task: tasks.Task, corpus: Corpus,
-                  notes: list[str], latency: dict[str, float]) -> None:
+                  notes: list[str], latency: dict[str, float], view: str = "narr") -> None:
+    """Add "<base>+rerank": the reranker re-reads the top results of `base`, seeing the
+    `view` text of each report."""
+    global _RERANKER
     try:
         from ..retrieve.rerank import Reranker
 
-        reranker = Reranker("ettin-150m")
+        _RERANKER = _RERANKER or Reranker("ettin-150m")
     except Exception as exc:  # model not downloadable / not enough memory
         notes.append(f"reranker skipped: {type(exc).__name__}: {exc}")
         return
-    doc_text = dict(zip(corpus.doc_ids, corpus.texts("narr"), strict=True))
+    reranker = _RERANKER
+    doc_text = dict(zip(corpus.doc_ids, corpus.texts(view), strict=True))
     name = f"{base}+rerank"
     runs[name], ms = _timed(
         lambda: reranker.rerank(runs[base], task.query_text, doc_text, RERANK_DEPTH), len(task.qids)
@@ -156,6 +163,17 @@ def run_a(corpus: Corpus) -> pd.DataFrame:
     elif hybrids:
         notes.append(f"{MAIN_DENSE} embeddings not built yet; reranking {hybrids[0]} instead.")
         _maybe_rerank(runs, hybrids[0], task, corpus, notes, latency)
+
+    # Everything together: keyword search over table + narrative text, fused with the
+    # embedding search over the narrative, then reranked on the table + narrative text.
+    if MAIN_DENSE in runs:
+        name = f"bm25[merged]+{MAIN_DENSE}"
+        runs[name] = rrf([runs["bm25[merged]"], runs[MAIN_DENSE]], depth=DEPTH)
+        latency[name] = latency["bm25[merged]"] + latency[MAIN_DENSE]
+        _maybe_rerank(runs, name, task, corpus, notes, latency, view="merged")
+        notes.append(f"{name}: keyword search reads table + narrative, {MAIN_DENSE} reads the "
+                     "narrative; its reranker reads table + narrative. The other reranked arm "
+                     "reads the narrative only.")
 
     _save_runs("A", runs)
     table = _report("A", task.qrels, runs, METRICS_A, latency, notes)

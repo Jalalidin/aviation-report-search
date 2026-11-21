@@ -313,7 +313,7 @@ async function initCompare() {
     sel.append(g);
   }
   const ids = R.arms.map(a => a.id);
-  const prefer = ["bm25", "qwen3-0.6b", "bm25+qwen3-0.6b", "bm25+qwen3-0.6b+rerank", "bge-small", "bm25+bge-small+rerank"];
+  const prefer = ["bm25", "qwen3-0.6b", "bm25+qwen3-0.6b+rerank", "bm25[merged]+qwen3-0.6b+rerank", "bm25+qwen3-0.6b", "bge-small", "bm25+bge-small+rerank"];
   picked = new Set(prefer.filter(a => ids.includes(a)).slice(0, 4));
   R.arms.forEach(a => {
     const b = el("button", "chip", a.label); b.type = "button";
