@@ -42,6 +42,7 @@ ARM_LABELS = {
     "bge-small[merged]": "Embedding: BGE small, table + narrative",
     "qwen3-0.6b": "Embedding: Qwen3",
     "qwen3-0.6b[table]": "Embedding: Qwen3, table text",
+    "qwen3-0.6b[merged]": "Embedding: Qwen3, table + narrative as one text",
     "qwen3-0.6b[table⊕narr]": "Embedding: Qwen3, table and narrative fused",
     "bge-m3": "Embedding: BGE-M3",
     "bm25+bge-small": "Hybrid: keyword + BGE small",

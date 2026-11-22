@@ -79,12 +79,13 @@ Task A — find a known report (120 queries):
 | Keyword, table + narrative as one text | 0.650 | 0.507 | 1 |
 | Keyword, table and narrative fused | 0.667 | 0.487 | 1 |
 | Embedding: BGE small, narrative | 0.500 | 0.346 | 2 |
-| Embedding: Qwen3, narrative | 0.592 | 0.415 | 20 |
-| Embedding: Qwen3, table and narrative fused | 0.650 | 0.405 | 39 |
-| Hybrid: keyword + Qwen3, narrative | 0.600 | 0.465 | 20 |
-| Hybrid + reranker, narrative | 0.708 | 0.532 | 2,385 |
-| Hybrid: keyword on table + narrative, + Qwen3 | 0.700 | 0.509 | 20 |
-| Same, + reranker | **0.742** | **0.544** | 2,593 |
+| Embedding: Qwen3, narrative | 0.592 | 0.415 | 18 |
+| Embedding: Qwen3, table + narrative as one text | 0.642 | 0.467 | 19 |
+| Embedding: Qwen3, table and narrative fused | 0.650 | 0.405 | 38 |
+| Hybrid: keyword + Qwen3, narrative | 0.600 | 0.465 | 19 |
+| Hybrid + reranker, narrative | 0.708 | 0.532 | 2,374 |
+| Hybrid: keyword on table + narrative, + Qwen3 | 0.700 | 0.509 | 19 |
+| Same, + reranker | **0.742** | **0.544** | 2,589 |
 
 Same task, MRR@10 by how the query was phrased:
 
@@ -93,6 +94,7 @@ Same task, MRR@10 by how the query was phrased:
 | Keyword, narrative only | 0.692 | 0.404 | 0.204 |
 | Keyword, table + narrative as one text | 0.785 | 0.490 | 0.246 |
 | Embedding: Qwen3, narrative | 0.663 | 0.339 | 0.243 |
+| Embedding: Qwen3, table + narrative as one text | 0.692 | 0.432 | 0.277 |
 | Hybrid: keyword + Qwen3, narrative | 0.719 | 0.405 | 0.269 |
 | Hybrid + reranker, narrative | 0.699 | 0.436 | 0.461 |
 | Hybrid on table + narrative, + reranker | 0.730 | 0.533 | 0.369 |
@@ -109,8 +111,9 @@ Task B — find similar incidents (300 query reports), nDCG@10:
 
 What this says, in short:
 
-- **Use the table and the narrative together.** It helps every method that was tried, and
-  the gain is statistically significant.
+- **Use the table and the narrative together.** For keyword search and for the hybrid the
+  gain is statistically significant. Qwen3 also scores higher on the joined text, but that gain
+  is not proven, and the small BGE model scores lower on it.
 - **Qwen3 alone does not beat keyword search on short queries**, but it does on "find similar
   incidents", where the query is a whole report.
 - **Keyword + Qwen3 together is the safest choice** on both tasks. A reranker on top helps most
@@ -132,6 +135,7 @@ uv run avsearch index            # keyword index
 uv run avsearch embed bge-small  # embeddings (minutes)
 uv run avsearch embed qwen3-0.6b # embeddings (about 80 minutes on an M1 Pro)
 uv run avsearch embed qwen3-0.6b --view table   # same model on the table text
+uv run avsearch embed qwen3-0.6b --view merged  # same model on table + narrative as one text
 uv run avsearch eval             # run every method, write eval/results/
 uv run python scripts/task_b_seeds.py   # optional: repeat Task B with other query samples
 ```
